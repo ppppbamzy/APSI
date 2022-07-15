@@ -208,15 +208,6 @@ endif()
 # APSI C++ library #
 ####################
 
-# [option] BUILD_SHARED_LIBS (default: OFF)
-# Build a shared library if set to ON. Build a static library regardlessly.
-set(BUILD_SHARED_LIBS_STR "Build shared library")
-option(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_STR} OFF)
-# TODO: consider building shared in future
-if(BUILD_SHARED_LIBS)
-    message(FATAL_ERROR "Only static build is supported; set `BUILD_SHARED_LIBS=OFF`")
-endif()
-
 # Create the config file
 configure_file(${APSI_CONFIG_H_IN_FILENAME} ${APSI_CONFIG_H_FILENAME})
 install(
