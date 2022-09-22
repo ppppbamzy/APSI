@@ -19,7 +19,7 @@ int_sz = args.intersection_size
 label_bc = args.label_byte_count
 item_bc = args.item_byte_count
 
-sender_list = []
+sender_list = [("item", "label")]
 letters = string.ascii_lowercase + string.ascii_uppercase
 while len(sender_list) < sender_sz:
     item = ''.join(random.choice(letters) for i in range(item_bc))
