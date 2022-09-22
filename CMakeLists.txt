@@ -182,8 +182,8 @@ FetchContent_MakeAvailable(JsonCpp)
 
 # [Option] APSI_USE_LOG4CPLUS (default: ON)
 set(APSI_USE_LOG4CPLUS_OPTION_STR "Use Log4cplus for logging")
-option(APSI_USE_LOG4CPLUS ${APSI_USE_LOG4CPLUS_OPTION_STR} ON)
-set(APSI_USE_LOG4CPLUS ON)
+option(APSI_USE_LOG4CPLUS ${APSI_USE_LOG4CPLUS_OPTION_STR} OFF)
+set(APSI_USE_LOG4CPLUS OFF)
 if(APSI_USE_LOG4CPLUS)
     # Log4cplus
     find_package(log4cplus REQUIRED)
