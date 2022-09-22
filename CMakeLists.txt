@@ -232,7 +232,7 @@ endif()
 # [Option] APSI_BUILD_CLI (default: OFF)
 set(APSI_BUILD_CLI_OPTION_STR "Build example command line interface applications")
 cmake_dependent_option(APSI_BUILD_CLI ${APSI_BUILD_CLI_OPTION_STR} OFF "APSI_USE_ZMQ;APSI_USE_LOG4CPLUS" OFF)
-set(APSI_BUILD_CLI OFF)
+set(APSI_BUILD_CLI ON)
 if (APSI_BUILD_CLI)
     # TCLAP
     find_path(TCLAP_INCLUDE_DIRS "tclap/Arg.h")
@@ -251,7 +251,7 @@ endif()
 # [option] BUILD_SHARED_LIBS (default: OFF)
 # Build a shared library if set to ON. Build a static library regardlessly.
 set(BUILD_SHARED_LIBS_STR "Build shared library")
-option(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_STR} OFF)
+option(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_STR} ON)
 # TODO: consider building shared in future
 if(BUILD_SHARED_LIBS)
     message(FATAL_ERROR "Only static build is supported; set `BUILD_SHARED_LIBS=OFF`")
@@ -264,7 +264,8 @@ install(
     DESTINATION ${APSI_INCLUDES_INSTALL_DIR}/apsi)
 
 # Create a single library "apsi" for common, sender, and receiver
-add_library(apsi STATIC)
+# add_library(apsi STATIC)
+add_library(apsi SHARED)
 apsi_set_version_filename(apsi)
 apsi_set_language(apsi)
 # target_include_directories(apsi PUBLIC
@@ -299,6 +300,7 @@ target_link_libraries(apsi
     PUBLIC Kuku::kuku
     # PUBLIC flatbuffers
     PUBLIC jsoncpp
+    PUBLIC stdc++fs
 )
 if(APSI_USE_LOG4CPLUS)
     target_link_libraries(apsi PUBLIC log4cplus::log4cplus)
@@ -342,19 +344,19 @@ else()
 endif()
 
 # Set AVX or AVX2 if not generic
-if(APSI_FOURQ_AMD64 AND (APSI_DETECT_AVX OR APSI_DETECT_AVX2))
-    include(FindAVX)
-    check_for_avx(apsi)
-    if (HAVE_AVX2_EXTENSIONS)
-        target_compile_options(apsi PUBLIC -D_AVX2_)
-        message(STATUS "FourQlib optimization: simd=AVX2")
-    elseif(HAVE_AVX_EXTENSIONS)
-        target_compile_options(apsi PUBLIC -D_AVX_)
-        message(STATUS "FourQlib optimization: simd=AVX")
-    endif()
-else()
+# if(APSI_FOURQ_AMD64 AND (APSI_DETECT_AVX OR APSI_DETECT_AVX2))
+#     include(FindAVX)
+#     check_for_avx(apsi)
+#     if (HAVE_AVX2_EXTENSIONS)
+#         target_compile_options(apsi PUBLIC -D_AVX2_)
+#         message(STATUS "FourQlib optimization: simd=AVX2")
+#     elseif(HAVE_AVX_EXTENSIONS)
+#         target_compile_options(apsi PUBLIC -D_AVX_)
+#         message(STATUS "FourQlib optimization: simd=AVX")
+#     endif()
+# else()
     message(STATUS "FourQlib optimization: simd=OFF")
-endif()
+# endif()
 
 # Use optimized assembly on Linux (non-AVX or AVX2)
 set(APSI_FOURQ_USE_ASM OFF)
