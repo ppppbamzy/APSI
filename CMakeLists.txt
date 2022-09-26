@@ -268,10 +268,27 @@ install(
 add_library(apsi SHARED)
 apsi_set_version_filename(apsi)
 apsi_set_language(apsi)
-# target_include_directories(apsi PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
-#     $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
-#     /opt/homebrew/Cellar/flatbuffers/2.0.6/include/)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
+    /usr/local/Cellar/tclap/1.2.5/include
+)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
+    /usr/local/Cellar/cppzmq/4.8.1/include/
+    /usr/local/Cellar/zeromq/4.3.4/include/zmq.h
+)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
+    /usr/local/Cellar/zeromq/4.3.4/include
+)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
+    /usr/local/Cellar/flatbuffers/2.0.8/include/
+)
 target_include_directories(apsi PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
     $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
@@ -298,9 +315,7 @@ apsi_install_target(apsi APSITargets)
 target_link_libraries(apsi
     PUBLIC SEAL::seal
     PUBLIC Kuku::kuku
-    # PUBLIC flatbuffers
     PUBLIC jsoncpp
-    PUBLIC stdc++fs
 )
 if(APSI_USE_LOG4CPLUS)
     target_link_libraries(apsi PUBLIC log4cplus::log4cplus)
@@ -477,4 +492,26 @@ if(APSI_BUILD_CLI)
     target_include_directories(pd_tool PRIVATE cli)
     target_include_directories(pd_tool PRIVATE ${TCLAP_INCLUDE_DIRS})
     target_link_libraries(pd_tool apsi)
+
+
 endif()
+target_link_directories(apsi PUBLIC /usr/local/lib/)
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
+
+if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
+endif()
+
+include(FetchContent)
+FetchContent_Declare(
+	pybind11
+	GIT_REPOSITORY https://github.com/pybind/pybind11.git
+	GIT_TAG        v2.6.2
+	GIT_SHALLOW    TRUE
+)
+
+FetchContent_MakeAvailable(pybind11)
+
+# add_executable(apsi main.cc)
+target_link_libraries(apsi PRIVATE pybind11::embed)
