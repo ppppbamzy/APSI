@@ -441,6 +441,14 @@ if(APSI_BUILD_TESTS)
     target_link_libraries(unit_tests apsi GTest::gtest)
 endif()
 
+###
+
+add_subdirectory(pybind11)
+pybind11_add_module(apsi_sender sender/apsi/apsi.cc)
+pybind11_add_module(mymodule mymodule.cpp)
+
+###
+
 ##########################
 # APSI integration tests #
 ##########################
@@ -498,20 +506,3 @@ endif()
 target_link_directories(apsi PUBLIC /usr/local/lib/)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-
-if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "${CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS} -undefined dynamic_lookup")
-endif()
-
-include(FetchContent)
-FetchContent_Declare(
-	pybind11
-	GIT_REPOSITORY https://github.com/pybind/pybind11.git
-	GIT_TAG        v2.6.2
-	GIT_SHALLOW    TRUE
-)
-
-FetchContent_MakeAvailable(pybind11)
-
-# add_executable(apsi main.cc)
-target_link_libraries(apsi PRIVATE pybind11::embed)

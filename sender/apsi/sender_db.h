@@ -13,8 +13,6 @@
 #include <utility>
 #include <vector>
 
-// GSL
-#include "gsl/span"
 
 // APSI
 #include "apsi/bin_bundle.h"
@@ -26,6 +24,9 @@
 // SEAL
 #include "seal/plaintext.h"
 #include "seal/util/locks.h"
+
+// GSL
+#include "gsl/span"
 
 namespace apsi {
     namespace sender {
