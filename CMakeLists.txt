@@ -444,8 +444,17 @@ endif()
 ###
 
 add_subdirectory(pybind11)
-pybind11_add_module(apsi_sender sender/apsi/apsi.cc)
-pybind11_add_module(mymodule mymodule.cpp)
+pybind11_add_module(apsi_sender_py sender/apsi/apsi.cc)
+target_include_directories(apsi_sender_py PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/sender>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(apsi_sender_py PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/receiver>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(apsi_sender_py PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_link_libraries(apsi_sender_py PRIVATE apsi)
 
 ###
 
