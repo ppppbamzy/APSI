@@ -441,13 +441,6 @@ if(APSI_BUILD_TESTS)
     target_link_libraries(unit_tests apsi GTest::gtest)
 endif()
 
-###
-
-add_subdirectory(pybind11)
-pybind11_add_module(apsi_sender sender/apsi/apsi.cc)
-pybind11_add_module(mymodule mymodule.cpp)
-
-###
 
 ##########################
 # APSI integration tests #
@@ -506,3 +499,29 @@ endif()
 target_link_directories(apsi PUBLIC /usr/local/lib/)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+
+###
+
+#add_subdirectory(pybind11)
+#pybind11_add_module(apsi)
+#add_library(sender_db sender/apsi/sender_db.cpp)
+#pybind11_add_module(apsi_sender sender/apsi/apsi.cc)
+#pybind11_add_module(mymodule mymodule.cpp)
+# pybind11_add_module(_apsi apsi)
+
+# add_library(apsi SHARED)
+
+add_subdirectory(pybind11)
+pybind11_add_module(pyapsi apsi.cc)
+target_include_directories(pyapsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/sender>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(pyapsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/receiver>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(pyapsi PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/common>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_link_libraries(pyapsi PRIVATE apsi)
+
+###

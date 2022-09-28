@@ -6,8 +6,8 @@ namespace py = pybind11;
 using namespace apsi;
 using namespace apsi::sender;
 
-PYBIND11_MODULE(apsi, m) {
-    m.doc() = "pybind11 apsi plugin";  // Optional module docstring
+PYBIND11_MODULE(pyapsi, m) {
+    m.doc() = "pybind11 pyapsi plugin";  // Optional module docstring
 
     py::class_<SenderDB>(m, "SenderDB")
         .def("clear", &SenderDB::clear, "Clears the database. Every item and label will be removed. The OPRF key is unchanged.")
