@@ -1,13 +1,71 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl_bind.h>
+#include <pybind11/stl.h>
+#include <pybind11/complex.h>
+#include <pybind11/functional.h>
+#include <pybind11/chrono.h>
 #include "sender/apsi/sender_db.h"
+#include "receiver/apsi/receiver.h"
 
 namespace py = pybind11;
 
+using namespace std;
 using namespace apsi;
 using namespace apsi::sender;
 
+// APSI
+#include "apsi/psi_params.h"
+#include "apsi/psi_params_generated.h"
+#include "apsi/version.h"
+#include "apsi/util/utils.h"
+
+// SEAL
+#include "seal/context.h"
+#include "seal/modulus.h"
+#include "seal/util/common.h"
+#include "seal/util/defines.h"
+
+// JSON
+#include "json/json.h"
+
+vector<Item> CreateItems(){
+    vector<Item> sender_items;
+    for (size_t i = 0; i < 100; i++) {
+        sender_items.push_back({ i + 1, i + 1 });
+    }
+
+    return sender_items;
+}
+
+void TestSend(const PSIParams &params, size_t sender_size){
+    vector<Item> sender_items;
+    for (size_t i = 0; i < sender_size; i++) {
+        sender_items.push_back({ i + 1, i + 1 });
+    }
+
+    auto sender_db = make_shared<SenderDB>(params, 0);
+    auto oprf_key = sender_db->get_oprf_key();
+
+    sender_db->set_data(sender_items);
+
+    auto seal_context = sender_db->get_seal_context();
+}
+
+PYBIND11_MAKE_OPAQUE(std::vector<Item>);
+
 PYBIND11_MODULE(pyapsi, m) {
     m.doc() = "pybind11 pyapsi plugin";  // Optional module docstring
+
+    py::bind_vector<std::vector<Item>>(m, "VectorItem");
+
+    py::class_<Item>(m, "Item")
+//        .def("hash_to_value", &Item::hash_to_value)
+        .def("to_bitstring", &Item::to_bitstring);
+
+    py::class_<PSIParams>(m, "PSIParams")
+        .def("save", &PSIParams::save, "Writes the PSIParams to a stream.")
+        .def("Load", py::overload_cast<std::istream &>(&PSIParams::Load), "Reads the PSIParams from a stream.")
+        .def("Load", py::overload_cast<const std::string &>(&PSIParams::Load), "Reads the PSIParams from a JSON string.");
 
     py::class_<SenderDB>(m, "SenderDB")
         .def(py::init<PSIParams, std::size_t, std::size_t, bool>(), py::arg("params"), py::arg("label_byte_count") = 0, py::arg("nonce_byte_count") = 16, py::arg("compressed") = true, "Creates a new SenderDB.")
@@ -28,8 +86,18 @@ PYBIND11_MODULE(pyapsi, m) {
 //        .def("insert_or_assign", static_cast<void (Sender_db::*)(const Item &)> (&Sender_db::insert_or_assign), "Inserts the given (hashed) item into the database. This function can be used only on an unlabeled SenderDB instance.")
         .def("set_data", static_cast<void (SenderDB::*)(const std::vector<std::pair<Item, Label>> &)> (&SenderDB::set_data), "Clears the database and inserts the given data. This function can be used only on a labeled SenderDB instance.")
         .def("set_data", static_cast<void (SenderDB::*)(const std::vector<Item> &)> (&SenderDB::set_data), "Clears the database and inserts the given data. This function can be used only on an unlabeled SenderDB instance.")
-//        .def("", &Sender_db::, "")
+        .def("has_item", &SenderDB::has_item, "")
+        .def("get_label", &SenderDB::get_label, "")
+        .def("get_params", &SenderDB::get_params, "")
+        .def("get_crypto_context", &SenderDB::get_crypto_context, "")
+        .def("get_seal_context", &SenderDB::get_seal_context, "")
+        .def("get_hashed_items", &SenderDB::get_hashed_items, "")
+        .def("get_item_count", &SenderDB::get_item_count, "")
+        .def("get_packing_rate", &SenderDB::get_packing_rate, "")
+        .def("save", &SenderDB::save, "")
+        .def("Load", &SenderDB::Load, "")
         ;
 
-//    m.def("")
+    m.def("CreateItems", &CreateItems );
+    m.def("TestSend", &TestSend );
 }
