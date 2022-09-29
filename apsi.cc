@@ -10,6 +10,12 @@ PYBIND11_MODULE(pyapsi, m) {
     m.doc() = "pybind11 pyapsi plugin";  // Optional module docstring
 
     py::class_<SenderDB>(m, "SenderDB")
+        .def(py::init<PSIParams, std::size_t, std::size_t, bool>(), py::arg("params"), py::arg("label_byte_count") = 0, py::arg("nonce_byte_count") = 16, py::arg("compressed") = true, "Creates a new SenderDB.")
+        .def(py::init<PSIParams, oprf::OPRFKey, std::size_t, std::size_t, bool>(), py::arg("params"), py::arg("oprf_key"), py::arg("label_byte_count") = 0, py::arg("nonce_byte_count") = 16, py::arg("compressed") = true, "Creates a new SenderDB.")
+//   TODO     .def(py::init<SenderDB &&>(), "Creates a new SenderDB by moving from an existing one.")
+//       .def(py::init<SenderDB >(), py::arg("source"), "Creates a new SenderDB by moving from an existing one.")
+//   TODO     .def(py::init<SenderDB &&>(), "Moves an existing SenderDB to the current one.")
+
         .def("clear", &SenderDB::clear, "Clears the database. Every item and label will be removed. The OPRF key is unchanged.")
         .def("is_labeled", &SenderDB::is_labeled, "Returns whether this is a labeled SenderDB.")
         .def("get_label_byte_count", &SenderDB::get_label_byte_count, "Returns the label byte count. A zero value indicates an unlabeled SenderDB.")
@@ -24,4 +30,6 @@ PYBIND11_MODULE(pyapsi, m) {
         .def("set_data", static_cast<void (SenderDB::*)(const std::vector<Item> &)> (&SenderDB::set_data), "Clears the database and inserts the given data. This function can be used only on an unlabeled SenderDB instance.")
 //        .def("", &Sender_db::, "")
         ;
+
+//    m.def("")
 }
