@@ -33,4 +33,5 @@ sender_db = apsi.SenderDB(params)
 
 items = apsi.CreateItems()
 sender_db.set_data(items)
-sender_db.save("./out")
+l = apsi.save_to_file(sender_db, "./out")
+print(l)

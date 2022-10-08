@@ -28,6 +28,9 @@ using namespace apsi::sender;
 // JSON
 #include "json/json.h"
 
+#include <sstream>
+#include <fstream>
+
 vector<Item> CreateItems(){
     vector<Item> sender_items;
     for (size_t i = 0; i < 100; i++) {
@@ -49,6 +52,22 @@ void TestSend(const PSIParams &params, size_t sender_size){
     sender_db->set_data(sender_items);
 
     auto seal_context = sender_db->get_seal_context();
+}
+
+//std::string save_to_string(const SenderDB &db) {
+//    stringstream ss;
+//    std::string out;
+//    auto save_size = db.save(ss);
+//    std::cout << save_size << "\n";
+//    out = ss.str();
+//    return out;
+//}
+
+std::size_t save_to_file(const SenderDB &db, const string &file_name) {
+    ofstream fs;
+    fs.open(file_name);
+    auto save_size = db.save(fs);
+    return save_size;
 }
 
 PYBIND11_MAKE_OPAQUE(std::vector<Item>);
@@ -98,6 +117,9 @@ PYBIND11_MODULE(pyapsi, m) {
         .def("Load", &SenderDB::Load, "")
         ;
 
-    m.def("CreateItems", &CreateItems );
-    m.def("TestSend", &TestSend );
+    m.def("CreateItems", &CreateItems);
+    m.def("TestSend", &TestSend);
+//    m.def("save_to_string", &save_to_string);
+//    m.def("save_to_file", &save_to_file, py::arg("file_name"));
+    m.def("save_to_file", &save_to_file);
 }
