@@ -31,6 +31,8 @@ project(APSI VERSION 0.8.2 LANGUAGES CXX C)
 # This policy was introduced in CMake 3.13; OLD by default until CMake 3.21
 cmake_policy(SET CMP0077 NEW)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 ########################
 # Global configuration #
 ########################
@@ -151,18 +153,22 @@ FetchContent_MakeAvailable(Kuku)
 # endif()
 
 # Flatbuffers
-# FetchContent_Declare(
-#     flatbuffers
-#     GIT_REPOSITORY "https://github.com/google/flatbuffers"
-# )
-# FetchContent_MakeAvailable(Flatbuffers)
+FetchContent_Declare(
+    flatbuffers
+    GIT_REPOSITORY "https://github.com/google/flatbuffers"
+)
+FetchContent_GetProperties(flatbuffers)
+if(NOT flatbuffers_POPULATED)
+    FetchContent_Populate(flatbuffers)
+endif()
+# FetchContent_MakeAvailable(flatbuffers)
     # find_package(Flatbuffers REQUIRED)
     # if(NOT Flatbuffers_FOUND)
     #     message(FATAL_ERROR "Flatbuffers: not found")
     # else()
-    message(STATUS "Flatbuffers: found")
+    # message(STATUS "Flatbuffers in ${flatbuffers_SOURCE_DIR}")
     # get_target_property(FLATBUFFERS_FLATC_PATH flatbuffers::flatc IMPORTED_LOCATION_RELEASE)
-    set(FLATBUFFERS_FLATC_PATH "/usr/local/bin/flatc")
+    set(FLATBUFFERS_FLATC_PATH "${flatbuffers_BINARY_DIR}/flatc")
     message(STATUS "flatc path: ${FLATBUFFERS_FLATC_PATH}")
     include(CompileSchemaCXX)
 # endif()

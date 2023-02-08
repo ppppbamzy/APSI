@@ -2,6 +2,26 @@
 # Licensed under the MIT license.
 
 execute_process(
+    COMMAND ${CMAKE_COMMAND} ${flatbuffers_SOURCE_DIR}
+    COMMAND_ECHO STDOUT
+    WORKING_DIRECTORY ${flatbuffers_BINARY_DIR}
+    RESULT_VARIABLE result
+)
+if(result)
+    message(FATAL_ERROR "flatc building failed (${result})")
+endif()
+
+execute_process(
+    COMMAND make flatc
+    COMMAND_ECHO STDOUT
+    WORKING_DIRECTORY ${flatbuffers_BINARY_DIR}
+    RESULT_VARIABLE result
+)
+if(result)
+    message(FATAL_ERROR "flatc building failed (${result})")
+endif()
+
+execute_process(
     COMMAND ${FLATBUFFERS_FLATC_PATH} --cpp -o "${APSI_BUILD_DIR}/common/apsi" "${APSI_SOURCE_DIR}/common/apsi/psi_params.fbs"
     OUTPUT_QUIET
     RESULT_VARIABLE result)
