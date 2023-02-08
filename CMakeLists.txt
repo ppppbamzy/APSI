@@ -31,7 +31,7 @@ project(APSI VERSION 0.8.2 LANGUAGES CXX C)
 # This policy was introduced in CMake 3.13; OLD by default until CMake 3.21
 cmake_policy(SET CMP0077 NEW)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 ########################
 # Global configuration #
@@ -324,10 +324,28 @@ target_link_libraries(apsi
     PUBLIC jsoncpp
 )
 if(APSI_USE_LOG4CPLUS)
-    target_link_libraries(apsi PUBLIC log4cplus)
+    target_link_libraries(apsi PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/liblog4cplusS.a)
 endif()
 if(APSI_USE_ZMQ)
-    # target_link_libraries(apsi PUBLIC zmq cppzmq)
+    FetchContent_Declare(
+        zmq
+        GIT_REPOSITORY "https://github.com/zeromq/libzmq"
+    )
+    FetchContent_MakeAvailable(zmq)
+    FetchContent_Declare(
+        cppzmq
+        GIT_REPOSITORY "https://github.com/zeromq/cppzmq"
+    )
+    FetchContent_GetProperties(cppzmq)
+    if(NOT cppzmq_POPULATED)
+        FetchContent_Populate(cppzmq)
+    endif()
+    target_include_directories(apsi PUBLIC
+        $<BUILD_INTERFACE:${zmq_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+    target_include_directories(apsi PUBLIC
+        $<BUILD_INTERFACE:${cppzmq_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
     target_link_libraries(apsi PUBLIC zmq)
 endif()
 
@@ -462,13 +480,11 @@ endif()
 ##########################
 
 if(APSI_BUILD_CLI)
-    link_directories(
-        /opt/homebrew/Cellar/flatbuffers/2.0.6/lib
-        /Users/chb/Projects/deps/APSI/build/lib)
     add_library(common_cli OBJECT)
     add_subdirectory(cli/common)
     target_include_directories(common_cli PUBLIC cli)
     target_include_directories(common_cli PUBLIC ${TCLAP_INCLUDE_DIRS})
+    target_link_directories(common_cli PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
     target_link_libraries(common_cli PUBLIC apsi)
     if (NOT MSVC AND NOT APPLE)
         target_link_libraries(common_cli PUBLIC stdc++fs)
@@ -484,6 +500,8 @@ if(APSI_BUILD_CLI)
 
     add_executable(sender_cli)
     add_subdirectory(cli/sender)
+    target_link_directories(sender_cli PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    target_link_directories(sender_cli PUBLIC ${flatbuffers_BINARY_DIR})
     target_link_libraries(sender_cli PUBLIC common_cli apsi flatbuffers jsoncpp)
     if (APPLE)
         target_compile_options(common_cli PUBLIC -DHAVE_LONG_LONG)
@@ -491,10 +509,13 @@ if(APSI_BUILD_CLI)
 
     add_executable(receiver_cli)
     add_subdirectory(cli/receiver)
+    target_link_directories(receiver_cli PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+    target_link_directories(receiver_cli PUBLIC ${flatbuffers_BINARY_DIR})
     target_link_libraries(receiver_cli PUBLIC common_cli apsi flatbuffers jsoncpp)
 
     add_executable(pd_tool)
     add_subdirectory(cli/pd_tool)
+    target_link_directories(pd_tool PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
     target_include_directories(pd_tool PRIVATE cli)
     target_include_directories(pd_tool PRIVATE ${TCLAP_INCLUDE_DIRS})
     target_link_libraries(pd_tool apsi)
