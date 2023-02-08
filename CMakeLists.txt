@@ -191,13 +191,18 @@ set(APSI_USE_LOG4CPLUS_OPTION_STR "Use Log4cplus for logging")
 option(APSI_USE_LOG4CPLUS ${APSI_USE_LOG4CPLUS_OPTION_STR} ON)
 set(APSI_USE_LOG4CPLUS ON)
 if(APSI_USE_LOG4CPLUS)
-    # Log4cplus
-    find_package(log4cplus REQUIRED)
-    if(NOT log4cplus_FOUND)
-        message(FATAL_ERROR "log4cplus: not found")
-    else()
-        message(STATUS "log4cplus: found")
-    endif()
+    # # Log4cplus
+    # find_package(log4cplus REQUIRED)
+    # if(NOT log4cplus_FOUND)
+    #     message(FATAL_ERROR "log4cplus: not found")
+    # else()
+    #     message(STATUS "log4cplus: found")
+    # endif()
+    FetchContent_Declare(
+        log4cplus
+        GIT_REPOSITORY "https://github.com/log4cplus/log4cplus"
+    )
+    FetchContent_MakeAvailable(log4cplus)
 endif()
 
 # [Option] APSI_USE_ZMQ (default: ON)
@@ -240,14 +245,20 @@ set(APSI_BUILD_CLI_OPTION_STR "Build example command line interface applications
 cmake_dependent_option(APSI_BUILD_CLI ${APSI_BUILD_CLI_OPTION_STR} OFF "APSI_USE_ZMQ;APSI_USE_LOG4CPLUS" OFF)
 set(APSI_BUILD_CLI ON)
 if (APSI_BUILD_CLI)
-    # TCLAP
-    find_path(TCLAP_INCLUDE_DIRS "tclap/Arg.h")
-    if(TCLAP_INCLUDE_DIRS STREQUAL "TCLAP_INCLUDE_DIRS-NOTFOUND")
-        message(FATAL_ERROR "TCLAP: not found")
-    else()
-        message(STATUS "TCLAP: found")
-        message(STATUS "TCLAP_INCLUDE_DIRS: ${TCLAP_INCLUDE_DIRS}")
-    endif()
+    # # TCLAP
+    # find_path(TCLAP_INCLUDE_DIRS "tclap/Arg.h")
+    # if(TCLAP_INCLUDE_DIRS STREQUAL "TCLAP_INCLUDE_DIRS-NOTFOUND")
+    #     message(FATAL_ERROR "TCLAP: not found")
+    # else()
+    #     message(STATUS "TCLAP: found")
+    #     message(STATUS "TCLAP_INCLUDE_DIRS: ${TCLAP_INCLUDE_DIRS}")
+    # endif()    
+    FetchContent_Declare(
+        tclap
+        GIT_REPOSITORY "https://github.com/mirror/tclap"
+    )
+    FetchContent_MakeAvailable(tclap)
+    set(TCLAP_INCLUDE_DIRS ${tclap_SOURCE_DIR}/include)
 endif()
 
 ####################
@@ -273,10 +284,16 @@ install(
 add_library(apsi STATIC)
 apsi_set_version_filename(apsi)
 apsi_set_language(apsi)
-# target_include_directories(apsi PUBLIC
-#     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
-#     $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
-#     /opt/homebrew/Cellar/flatbuffers/2.0.6/include/)
+add_dependencies(apsi log4cplus::log4cplus)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${flatbuffers_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${log4cplus_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
+target_include_directories(apsi PUBLIC
+    $<BUILD_INTERFACE:${log4cplus_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>)
 target_include_directories(apsi PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/common>
     $<INSTALL_INTERFACE:${APSI_INCLUDES_INSTALL_DIR}>
@@ -307,7 +324,7 @@ target_link_libraries(apsi
     PUBLIC jsoncpp
 )
 if(APSI_USE_LOG4CPLUS)
-    target_link_libraries(apsi PUBLIC log4cplus::log4cplus)
+    target_link_libraries(apsi PUBLIC log4cplus)
 endif()
 if(APSI_USE_ZMQ)
     # target_link_libraries(apsi PUBLIC zmq cppzmq)
