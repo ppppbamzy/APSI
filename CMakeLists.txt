@@ -128,15 +128,6 @@ FetchContent_Declare(
         GIT_TAG "2d2a25c916047d2f356d45ad50c98f0a9695905a"
 )
 FetchContent_MakeAvailable(SEAL)
-# find_package(SEAL 4.0 QUIET REQUIRED)
-# if(NOT SEAL_FOUND)
-#     message(FATAL_ERROR "Microsoft SEAL: not found")
-# else()
-#     message(STATUS "Microsoft SEAL: found")
-# endif()
-# if(NOT APSI_USE_CXX17 AND SEAL_USE_CXX17)
-#     message(FATAL_ERROR "CXX standards mismatch: APSI_USE_CXX17 is OFF, SEAL_USE_CXX17 is ON")
-# endif()
 
 # Microsoft Kuku
 FetchContent_Declare(
@@ -145,12 +136,6 @@ FetchContent_Declare(
     GIT_TAG "1338c4ae2211ab4c739022ff57f48ce5a76531d5"
 )
 FetchContent_MakeAvailable(Kuku)
-# find_package(Kuku 2.1 QUIET REQUIRED)
-# if(NOT Kuku_FOUND)
-#     message(FATAL_ERROR "Microsoft Kuku: not found")
-# else()
-#     message(STATUS "Microsoft Kuku: found")
-# endif()
 
 # Flatbuffers
 FetchContent_Declare(
@@ -161,17 +146,9 @@ FetchContent_GetProperties(flatbuffers)
 if(NOT flatbuffers_POPULATED)
     FetchContent_Populate(flatbuffers)
 endif()
-# FetchContent_MakeAvailable(flatbuffers)
-    # find_package(Flatbuffers REQUIRED)
-    # if(NOT Flatbuffers_FOUND)
-    #     message(FATAL_ERROR "Flatbuffers: not found")
-    # else()
-    # message(STATUS "Flatbuffers in ${flatbuffers_SOURCE_DIR}")
-    # get_target_property(FLATBUFFERS_FLATC_PATH flatbuffers::flatc IMPORTED_LOCATION_RELEASE)
-    set(FLATBUFFERS_FLATC_PATH "${flatbuffers_BINARY_DIR}/flatc")
-    message(STATUS "flatc path: ${FLATBUFFERS_FLATC_PATH}")
-    include(CompileSchemaCXX)
-# endif()
+set(FLATBUFFERS_FLATC_PATH "${flatbuffers_BINARY_DIR}/flatc")
+message(STATUS "flatc path: ${FLATBUFFERS_FLATC_PATH}")
+include(CompileSchemaCXX)
 
 # jsoncpp: for parameter configuration
 FetchContent_Declare(
@@ -179,25 +156,12 @@ FetchContent_Declare(
     GIT_REPOSITORY "https://github.com/open-source-parsers/jsoncpp"
 )
 FetchContent_MakeAvailable(JsonCpp)
-# find_package(jsoncpp REQUIRED)
-# if (NOT jsoncpp_FOUND)
-#     message(FATAL_ERROR "jsoncpp: not found")
-# else()
-#     message(STATUS "jsoncpp: found")
-# endif()
 
 # [Option] APSI_USE_LOG4CPLUS (default: ON)
 set(APSI_USE_LOG4CPLUS_OPTION_STR "Use Log4cplus for logging")
 option(APSI_USE_LOG4CPLUS ${APSI_USE_LOG4CPLUS_OPTION_STR} ON)
 set(APSI_USE_LOG4CPLUS ON)
 if(APSI_USE_LOG4CPLUS)
-    # # Log4cplus
-    # find_package(log4cplus REQUIRED)
-    # if(NOT log4cplus_FOUND)
-    #     message(FATAL_ERROR "log4cplus: not found")
-    # else()
-    #     message(STATUS "log4cplus: found")
-    # endif()
     FetchContent_Declare(
         log4cplus
         GIT_REPOSITORY "https://github.com/log4cplus/log4cplus"
@@ -208,24 +172,6 @@ endif()
 # [Option] APSI_USE_ZMQ (default: ON)
 set(APSI_USE_ZMQ_OPTION_STR "Use ZeroMQ for networking")
 option(APSI_USE_ZMQ ${APSI_USE_ZMQ_OPTION_STR} ON)
-# set(APSI_USE_ZMQ OFF)
-# if(APSI_USE_ZMQ)
-#     list (APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
-#     # ZeroMQ base
-#     find_package(ZeroMQ REQUIRED)
-#     if(NOT ZeroMQ_FOUND)
-#         message(FATAL_ERROR "ZeroMQ: not found")
-#     else()
-#         message(STATUS "ZeroMQ: found")
-#     endif()
-#     # cppzmq wrapper
-#     find_package(cppzmq REQUIRED)
-#     if(NOT cppzmq_FOUND)
-#         message(FATAL_ERROR "cppzmq: not found")
-#     else()
-#         message(STATUS "cppzmq: found")
-#     endif()
-# endif()
 
 # [Option] APSI_BUILD_TESTS (default: OFF)
 set(APSI_BUILD_TESTS_OPTION_STR "Build unit and integration tests for APSI")
@@ -245,14 +191,6 @@ set(APSI_BUILD_CLI_OPTION_STR "Build example command line interface applications
 cmake_dependent_option(APSI_BUILD_CLI ${APSI_BUILD_CLI_OPTION_STR} OFF "APSI_USE_ZMQ;APSI_USE_LOG4CPLUS" OFF)
 set(APSI_BUILD_CLI ON)
 if (APSI_BUILD_CLI)
-    # # TCLAP
-    # find_path(TCLAP_INCLUDE_DIRS "tclap/Arg.h")
-    # if(TCLAP_INCLUDE_DIRS STREQUAL "TCLAP_INCLUDE_DIRS-NOTFOUND")
-    #     message(FATAL_ERROR "TCLAP: not found")
-    # else()
-    #     message(STATUS "TCLAP: found")
-    #     message(STATUS "TCLAP_INCLUDE_DIRS: ${TCLAP_INCLUDE_DIRS}")
-    # endif()    
     FetchContent_Declare(
         tclap
         GIT_REPOSITORY "https://github.com/mirror/tclap"
@@ -320,9 +258,9 @@ apsi_install_target(apsi APSITargets)
 target_link_libraries(apsi
     PUBLIC SEAL::seal
     PUBLIC Kuku::kuku
-    # PUBLIC flatbuffers
     PUBLIC jsoncpp
 )
+target_link_libraries(apsi PUBLIC ${flatbuffers_BINARY_DIR}/libflatbuffers.a)
 if(APSI_USE_LOG4CPLUS)
     target_link_libraries(apsi PRIVATE ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/liblog4cplusS.a)
 endif()
@@ -500,18 +438,14 @@ if(APSI_BUILD_CLI)
 
     add_executable(sender_cli)
     add_subdirectory(cli/sender)
-    target_link_directories(sender_cli PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-    target_link_directories(sender_cli PUBLIC ${flatbuffers_BINARY_DIR})
-    target_link_libraries(sender_cli PUBLIC common_cli apsi flatbuffers jsoncpp)
+    target_link_libraries(sender_cli PUBLIC common_cli apsi)
     if (APPLE)
         target_compile_options(common_cli PUBLIC -DHAVE_LONG_LONG)
     endif()
 
     add_executable(receiver_cli)
     add_subdirectory(cli/receiver)
-    target_link_directories(receiver_cli PUBLIC ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-    target_link_directories(receiver_cli PUBLIC ${flatbuffers_BINARY_DIR})
-    target_link_libraries(receiver_cli PUBLIC common_cli apsi flatbuffers jsoncpp)
+    target_link_libraries(receiver_cli PUBLIC common_cli apsi)
 
     add_executable(pd_tool)
     add_subdirectory(cli/pd_tool)

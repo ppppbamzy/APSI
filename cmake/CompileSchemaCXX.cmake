@@ -12,7 +12,7 @@ if(result)
 endif()
 
 execute_process(
-    COMMAND make
+    COMMAND make flatbuffers flatc -j
     COMMAND_ECHO STDOUT
     WORKING_DIRECTORY ${flatbuffers_BINARY_DIR}
     RESULT_VARIABLE result
